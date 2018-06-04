@@ -25,14 +25,19 @@ public class ingredientAdapter extends RecyclerView.Adapter<ingredientAdapter.ca
 
     private Context context;
     private ReviewJson reviewJson;
-    private StringBuffer stringBuffer;
-    public ingredientAdapter(Context cont , ReviewJson rJ) {
+    final private Step_Selected selected ;
+
+    public ingredientAdapter(Context cont , ReviewJson rJ , Step_Selected step) {
 
         this.context = cont;
         this.reviewJson = rJ;
+        this.selected = step;
+
     }
 
-
+    public interface Step_Selected{
+        void steps_handler(int position);
+    }
 
     @NonNull
     @Override
@@ -47,10 +52,6 @@ public class ingredientAdapter extends RecyclerView.Adapter<ingredientAdapter.ca
 
     @Override
     public void onBindViewHolder(@NonNull ingredientAdapter.cardHolder holder, int position) {
-//        stringBuffer.append(reviewJson.getIngredients().get(position).getIngredient());
-//        stringBuffer.append(reviewJson.getIngredients().get(position).getMeasure());
-//        stringBuffer.append(reviewJson.getIngredients().get(position).getQuantity());
-//         holder.ingText.append();
          holder.stepsNum.setText(reviewJson.getSteps().get(position).getId().toString()+"-");
          holder.stepsText.setText(reviewJson.getSteps().get(position).getShortDescription());
     }
@@ -78,7 +79,8 @@ public class ingredientAdapter extends RecyclerView.Adapter<ingredientAdapter.ca
 
         @Override
         public void onClick(View view) {
-
+            int position = getAdapterPosition();
+            selected.steps_handler(position);
         }
     }
 }

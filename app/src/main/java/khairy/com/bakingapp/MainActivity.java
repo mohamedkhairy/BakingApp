@@ -60,7 +60,6 @@ public class MainActivity extends AppCompatActivity implements mainPageAdapter.c
 
             @Override
             public void onFailure(Call<List<ReviewJson>> call, Throwable t) {
-                /////////////////////// geting Errors
                 Toast.makeText(MainActivity.this , t.getLocalizedMessage() , Toast.LENGTH_LONG).show();
                 Log.d("MAIN" , t.getMessage() + "\n" + t.getLocalizedMessage());
                 t.getStackTrace();
@@ -84,8 +83,6 @@ public class MainActivity extends AppCompatActivity implements mainPageAdapter.c
         reviewJson = reviewJsons_List.get(position);
 
         intent.putExtra(ingredientActivity.reviewJson_EXTRA ,reviewJson);
-//        intent.putExtra(ingredientActivity.ingredient_EXTRA ,ingredientData);
-//        intent.putExtra(ingredientActivity.steps_EXTRA , spepsData);
         startActivity(intent);
     }
 }

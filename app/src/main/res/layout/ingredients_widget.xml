@@ -1,21 +1,33 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#09C"
-    android:padding="@dimen/widget_margin">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:padding="@dimen/widget_margin"
+    >
 
-    <TextView
-        android:id="@+id/appwidget_text"
+
+    <ListView
+        android:id="@+id/widgetList"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:layout_margin="8dp"
-        android:background="#09C"
-        android:contentDescription="@string/appwidget_text"
-        android:text="@string/appwidget_text"
+        android:layout_marginLeft="15dp"
+        android:paddingTop="45dp"
+        android:paddingLeft="10dp"
+        android:paddingBottom="15dp"
+        android:paddingRight="15dp"
         android:textColor="#ffffff"
+        android:background="@drawable/textshape"
         android:textSize="24sp"
-        android:textStyle="bold|italic" />
+        android:textStyle="bold|italic"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/ringshape"
+        android:layout_marginTop="15dp"
+        android:padding="5dp"
+        android:textSize="15sp"
+        android:id="@+id/labelText"
+        android:text="INGREDIENTS"/>
 
 </RelativeLayout>
