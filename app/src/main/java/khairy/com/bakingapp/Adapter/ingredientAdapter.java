@@ -26,6 +26,8 @@ public class ingredientAdapter extends RecyclerView.Adapter<ingredientAdapter.ca
     private Context context;
     private ReviewJson reviewJson;
     final private Step_Selected selected ;
+    private final int  VIDEO = 1;
+
 
     public ingredientAdapter(Context cont , ReviewJson rJ , Step_Selected step) {
 
@@ -54,7 +56,14 @@ public class ingredientAdapter extends RecyclerView.Adapter<ingredientAdapter.ca
     public void onBindViewHolder(@NonNull ingredientAdapter.cardHolder holder, int position) {
          holder.stepsNum.setText(reviewJson.getSteps().get(position).getId().toString()+"-");
          holder.stepsText.setText(reviewJson.getSteps().get(position).getShortDescription());
+        if (reviewJson.getSteps().get(position).getVideoURL().isEmpty()) {
+            holder.icon.setVisibility(View.GONE);
+        }else {
+            holder.icon.setVisibility(View.VISIBLE);
+        }
     }
+
+
 
     @Override
     public int getItemCount() {
@@ -69,6 +78,8 @@ public class ingredientAdapter extends RecyclerView.Adapter<ingredientAdapter.ca
         TextView stepsNum;
         @BindView(R.id.steps)
         TextView stepsText;
+        @BindView(R.id.videoIcon)
+        ImageView icon;
 
 
         public cardHolder(View itemView) {

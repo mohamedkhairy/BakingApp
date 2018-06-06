@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.NavUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -32,8 +33,10 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
+import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.BandwidthMeter;
+import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
@@ -41,6 +44,7 @@ import com.google.android.exoplayer2.util.Util;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import khairy.com.bakingapp.MainActivity;
 import khairy.com.bakingapp.R;
 import khairy.com.bakingapp.intoStepsActivity;
 import khairy.com.bakingapp.jsonData.ReviewJson;
@@ -55,12 +59,13 @@ public class IntoSteps_fragment extends Fragment {
     private int position;
     private String Url;
     private long videoState;
+    private long stopstate;
     private Bundle bundlesavedState = null;
 
 
     private SimpleExoPlayer player;
     @BindView(R.id.videoView)
-    SimpleExoPlayerView simpleExoPlayerView;
+    PlayerView playerView;
     @BindView(R.id.text)
     TextView recips;
 
@@ -82,10 +87,6 @@ public class IntoSteps_fragment extends Fragment {
         position = getArguments().getInt(position_bundle);
         View view =  inflater.inflate(R.layout.into_steps, container, false);
         ButterKnife.bind(this , view);
-        if(savedInstanceState != null && bundlesavedState == null) {
-            bundlesavedState = savedInstanceState.getBundle("poss");
-        }
-
         return view;
     }
 
@@ -93,13 +94,16 @@ public class IntoSteps_fragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-
         recips.setText(reviewJsonData.getSteps().get(position).getDescription());
         Url = reviewJsonData.getSteps().get(position).getVideoURL();
-        if (!Url.isEmpty()) {
-            initial_state(Url);
-        }else {
-            simpleExoPlayerView.setVisibility(View.GONE);
+
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        if(savedInstanceState != null && bundlesavedState == null) {
+            bundlesavedState = savedInstanceState.getBundle("poss");
         }
     }
 
@@ -112,78 +116,47 @@ public class IntoSteps_fragment extends Fragment {
         TrackSelection.Factory videoTrackSelectionFactory = new AdaptiveTrackSelection.Factory(bandwidthMeter);
         TrackSelector trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
 
-
-
         player = ExoPlayerFactory.newSimpleInstance(getContext(), trackSelector );
 
-        simpleExoPlayerView.setUseController(true);
-        simpleExoPlayerView.requestFocus();
-        simpleExoPlayerView.setPlayer(player);
+        playerView.setPlayer(player);
 
         Uri mp4VideoUri =Uri.parse(link);
+        DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(
+                getContext(),
+                Util.getUserAgent(getContext(), getString(R.string.app_name)));
+        ExtractorMediaSource mediaSource = new ExtractorMediaSource.Factory(dataSourceFactory)
+                .createMediaSource(mp4VideoUri);
+        player.prepare(mediaSource);
 
-        DefaultDataSourceFactory dataSourceFactory = new DefaultDataSourceFactory(getContext(), Util.getUserAgent(getContext(), "myVideo") );
-        ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
-        MediaSource mediaSource = new ExtractorMediaSource(mp4VideoUri, dataSourceFactory, extractorsFactory, null, null);
 
-        final LoopingMediaSource loopingSource = new LoopingMediaSource(mediaSource);
-
-        player.prepare(loopingSource);
-        player.addListener(new ExoPlayer.EventListener() {
-            @Override
-            public void onTimelineChanged(Timeline timeline, Object manifest) {
-
-            }
-
-            @Override
-            public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
-
-            }
-
-            @Override
-            public void onLoadingChanged(boolean isLoading) {
-
-            }
-
-            @Override
-            public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-
-            }
-
-            @Override
-            public void onRepeatModeChanged(int repeatMode) {
-
-            }
-
-            @Override
-            public void onPlayerError(ExoPlaybackException error) {
-                player.stop();
-                player.prepare(loopingSource);
-                player.setPlayWhenReady(true);
-            }
-
-            @Override
-            public void onPositionDiscontinuity() {
-
-            }
-
-            @Override
-            public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
-
-            }
-        });
         if(bundlesavedState != null) {
             videoState = bundlesavedState.getLong("poss");
             if (videoState != C.TIME_UNSET){
                 player.seekTo(videoState);
             }
             bundlesavedState = null;
+        }else if (stopstate!=0){
+            player.seekTo(stopstate);
+            stopstate=0;
         }
         player.setPlayWhenReady(true);
 
     }
 
+    @Override
+    public void onStop() {
+        if (!Url.isEmpty()) {
+            playerView.setPlayer(null);
+            player.release();
+        }
+        super.onStop();
+    }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        stopstate = player.getCurrentPosition();
+    }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
@@ -205,31 +178,18 @@ public class IntoSteps_fragment extends Fragment {
             player.release();
         }
         return state;
-    }
 
-
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        if (!Url.isEmpty()) {
-            player.stop();
-            player.release();
-        }
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                getActivity().finish();
-                break;
-        }
-
-        return true;
+    public void onStart() {
+        super.onStart();
+            if (!Url.isEmpty()) {
+                initial_state(Url);
+            } else {
+                playerView.setVisibility(View.GONE);
+            }
     }
-
 
 
 }

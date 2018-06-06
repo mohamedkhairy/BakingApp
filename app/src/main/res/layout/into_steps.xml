@@ -7,10 +7,12 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <com.google.android.exoplayer2.ui.SimpleExoPlayerView
+    <com.google.android.exoplayer2.ui.PlayerView
         android:layout_width="match_parent"
         android:layout_height="250dp"
         android:id="@+id/videoView"
+        app:fastforward_increment="1000"
+        app:rewind_increment="1000"
         android:background="#000000"
         />
     <TextView
